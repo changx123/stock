@@ -2,3 +2,6 @@
 .ide/*
 demo
 demo/*
+vendor
+vendor/*
+glide.*
