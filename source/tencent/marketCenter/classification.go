@@ -1,9 +1,10 @@
 package marketCenter
 
 import (
-	"stock"
 	"regexp"
 	"encoding/json"
+	"stock/source"
+	"fmt"
 )
 
 type Class []struct {
@@ -40,21 +41,21 @@ type classEnJson struct {
 }
 
 //读取分类
-func ReaderClass() (Class , error) {
+func ReaderClass() (Class, error) {
 	classBody, err := downloadAllClass()
 	if err != nil {
-		return nil , err
+		return nil, err
 	}
-	classT , err := findAllClass(classBody)
+	classT, err := findAllClass(classBody)
 	if err != nil {
-		return nil , err
+		return nil, err
 	}
-	return classT , nil
+	return classT, nil
 }
 
 //下载行情中心分类数据
 func downloadAllClass() ([]byte, error) {
-	out, err := stock.Get("http://stockapp.finance.qq.com/mstats/?mod=all")
+	out, err := source.Get("http://stockapp.finance.qq.com/mstats/?mod=all")
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +64,7 @@ func downloadAllClass() ([]byte, error) {
 
 //查找行情中心所有有效分类
 func findAllClass(b []byte) (Class, error) {
+	fmt.Println(string(b))
 	//匹配json分类数据得到分类结构
 	r := regexp.MustCompile(`menuList : (.*?),\n`)
 	result := r.FindSubmatch(b)
@@ -96,9 +98,9 @@ func findAllClass(b []byte) (Class, error) {
 		}
 	}
 	out := make(Class, len(topLevelId))
-	LastClassNames , err := readerLastClassName(b)
+	LastClassNames, err := readerLastClassName(b)
 	if err != nil {
-		return nil , err
+		return nil, err
 	}
 	//根据顶级分类查找下级所有分类
 	for k, v := range topLevelId {
@@ -121,8 +123,8 @@ func findAllClass(b []byte) (Class, error) {
 				name := ""
 				if ok {
 					name = tue.T
-				}else {
-					name , ok = LastClassNames[value]
+				} else {
+					name, ok = LastClassNames[value]
 					if !ok {
 						name = ""
 					}
@@ -154,6 +156,5 @@ func readerLastClassName(b []byte) (map[string]string, error) {
 	for _, v := range names {
 		out[string(v[1])] = string(v[3])
 	}
-	//os.Exit(-1)
 	return out, nil
 }
