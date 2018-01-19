@@ -1,3 +1,0 @@
-package: stock
-import:
-- package: github.com/axgle/mahonia
